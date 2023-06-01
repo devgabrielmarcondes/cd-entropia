@@ -1,0 +1,169 @@
+\documentclass{report}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{csvsimple}
+\usepackage{listings}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+
+
+% \definecolor{brightPurple}{HTML}{FF92D0}
+% \definecolor{brightYellow}{HTML}{EAF08D}
+% \definecolor{brightBlack}{HTML}{4D4D4D}
+% \definecolor{brightGreen}{HTML}{5AF78E}
+% \definecolor{background}{HTML}{191622}
+% \definecolor{yellow}{HTML}{EFFA78}
+% \definecolor{purple}{HTML}{FF79C6}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.8,0,0.2}
+\definecolor{backcolour}{rgb}{.95,.95,1}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    % emph={read_csv, allEntropy, discretizeColumn, reshape, value, predict, flatten, KNeighborsClassifier, fit, value_counts, log2, }, % Nomes de método que receberão a cor
+    % emphstyle=\color{brightGreen}, % Cor para os nomes de método
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+}
+
+\lstset{style=mystyle}
+
+\title{Ciência de Dados - Trabalho Matemática Entropia}
+\author{Alex Aparecido de Lima \and Gabriel Marcondes dos Santos \and Mariana Miyuki Suzuki Kobayashi}
+
+\date{\today{}}
+
+\begin{document}
+
+\maketitle
+
+\section{Descrição da Base}
+O grupo selecionou a base de dados de predição de preços de laptops. Essa base contém dados quantitativos e qualitativos. Assim, torna-se necessário utilizar um algoritmo de classificação que discretize os dados quantitativos, a fim de calcularmos a Entropia destes.\\\\
+A base foi retirada do site "Kaggle", que oferece milhares de conjuntos de dados, para diferentes casos de uso.\\
+Encontra-se, abaixo, o link para encontrar a base utilizada.\\
+URL: https://www.kaggle.com/datasets/arnabchaki/laptop-price-prediction\\\\
+As colunas dessa tabela são:
+\begin{itemize}
+    \item Manufacturer
+    \item Model Name 
+    \item Category
+    \item Screen Size
+    \item Screen
+    \item CPU
+    \item RAM
+    \item Storage
+    \item GPU
+    \item Operating System
+    \item Operating System Version
+    \item Weight
+    \item Price
+\end{itemize}
+A tabela possui 977 linhas e 13 colunas ao todo. \\
+O grupo utilizou o algoritmo KNN para discretizar a coluna "Price" (Preço), conforme instruções do professor em aula.
+\newpage
+
+\section{Classes, Entropia e Resultados}
+\subsection{Quantidade de classes}
+A quantidade de classes depende da coluna analisada. Por exemplo, na coluna "Category", temos 6 classes: Notebook, Ultrabook, Gaming, 2 in 1 Convertible, Workstation e Netbook.\\\\
+Além disso, cada uma dessas classes pode se repetir. Nesse caso, a classe "Ultrabook" se repete 152 vezes, e a soma do número de repetição de todas as classes precisa resultar em 977, isto é, o número de linhas da tabela.
+
+\subsection{Quais classes serão analisados}
+Todas as classes serão analisadas para este trabalho.
+
+\subsection{Entropia e Resultados}
+As fórmulas utilizadas para calcular as Entropias são: \\\\
+$H=-\sum\limits_{x\in A}p(x)\cdot log_{2}(p(x))$ e $H_{max}=log_{2}A$\\\\
+Em que:
+\begin{itemize}
+    \item $H$ é a Entropia de Dados;
+    \item $H_{max}$ é a Entropia Máxima dos Dados;
+    \item $A$ são todas as variáveis de uma coluna (classes);
+    \item $x$ é um elemento de uma classe;
+    \item $p(x)$ é a probabilidade de ocorrer um evento $x$.
+\end{itemize}
+Abaixo estão listados as entropias de cada coluna da tabela:\\\\
+Entropia da coluna Manufacturer: 2.919. Máximo: 4.248\\
+Entropia da coluna Model Name: 8.306. Máximo: 8.931\\
+Entropia da coluna Category: 1.839. Máximo: 2.585\\
+Entropia da coluna Screen Size: 2.218. Máximo: 4.170\\
+Entropia da coluna Screen: 2.865. Máximo: 5.248\\
+Entropia da coluna CPU: 4.754. Máximo: 6.728\\
+Entropia da coluna RAM: 1.870. Máximo: 3.000\\
+Entropia da coluna Storage: 3.268. Máximo: 5.170\\
+Entropia da coluna GPU: 4.830. Máximo: 6.615\\
+Entropia da coluna Operating System: 0.879. Máximo: 2.807\\
+Entropia da coluna Operating System Version: 0.370. Máximo: 2.000\\
+Entropia da coluna Weight: 6.417. Máximo: 7.375\\
+Entropia da coluna Price: 3.281. Máximo: 3.322\\
+
+
+\newpage
+\section{Código em Python}
+
+\begin{lstlisting}[language=Python, caption=Código em Python da Entropia]
+import pandas as pd
+from math import log2
+from sklearn.neighbors import KNeighborsClassifier # KNN
+
+# Laptop price prediction data
+data = pd.read_csv('laptops_train.csv')
+
+# Testing laptop data set
+test = pd.read_csv('laptops_test.csv')
+
+# Discretize quantitative data
+def discretizeColumn(column, testColumn):
+    knn = KNeighborsClassifier(n_neighbors=10)
+    columnValues = column.values.reshape(-1, 1)
+    labels = pd.qcut(columnValues.flatten(), q=10, labels=False, duplicates='drop')
+    knn.fit(columnValues, labels)
+    testColumnValues = testColumn.values.reshape(-1, 1)
+    discretizedValues = knn.predict(testColumnValues)
+    return discretizedValues
+
+# Calculates the entropy of each column
+def allEntropy():
+    for colName in data.columns:
+        column = data[colName]
+        testColumn = test[colName]
+        if column.dtype == 'object':
+            # Categorical column
+            classes = column.value_counts()
+            probabilities = classes / len(data)
+            
+            # Entropy
+            eachEntropy = 0
+            for p in probabilities:
+                eachEntropy += -p * log2(p)
+            maxEachEntropy = log2(len(probabilities))
+        else:
+            # Quantitative column
+            discColumn = discretizeColumn(column,testColumn)
+            classes = pd.Series(discColumn).value_counts()
+            probabilities = classes / len(test)
+            eachEntropy = 0
+            for p in probabilities:
+                eachEntropy += -p * log2(p)
+            maxEachEntropy = log2(len(probabilities))
+
+        print(f"Entropy of the column {colName}: {eachEntropy}. Maximum: {maxEachEntropy}")
+
+allEntropy()
+\end{lstlisting}
+
+
+\end{document}
